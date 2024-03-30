@@ -4,19 +4,20 @@ namespace PubSub
     {
         public string Name;
 
-        D_Queue d_Queue;
+        DQ dq;
 
-        public Producer(string Name, D_Queue d_Queue)
+        public Producer(string Name, DQ dq)
         {
             this.Name = Name;
-            this.d_Queue = d_Queue;
+            this.dq = dq;
         }
 
-        public void Produce(string tName, string message)
+        public void Produce(string topicName, string message)
         {
-            Console.WriteLine($"{Name} producing {message} on {tName}");
-            d_Queue.pushItem(new Item(tName,message));
-        }
-        
+            //string time = 
+            Console.WriteLine($"{Name} producing {message} on {topicName} at {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}");
+            dq.pushItem(new Message(topicName,message));
+            Console.WriteLine($"{Name} Produced {message} at {DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss.ffff")}");
+        }        
     }
 }

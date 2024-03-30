@@ -1,8 +1,8 @@
 namespace PubSub
 {
-    public class Item
+    public class Message
     {
-        //public Topic topic;
+        public Topic topic;
 
         public string topicName;
 
@@ -10,12 +10,11 @@ namespace PubSub
 
         public DateTime dateTime;
 
-        public Item(string tName, string msg)
+        public Message(string topicName, string msg)
         {
-            topicName = tName;
+            this.topicName = topicName;
             message = msg;
             dateTime = DateTime.Now;
-        } 
-        
+        }         
     }
 }

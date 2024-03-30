@@ -6,67 +6,82 @@ class Program
     static void Main(string[] args)
     {
         //Console.WriteLine("Hello, World!");
-        D_Queue d_Queue = new D_Queue();
+        DQ dq = new DQ();
 
-        Producer p1 = new Producer("Producer1", d_Queue);
+        List<Producer> producers = new List<Producer>
+        {
+            new Producer("Producer1", dq),
+            new Producer("Producer2", dq)
+        };
 
-        Producer p2 = new Producer("Producer2", d_Queue);
+        List<Consumer> consumers = new List<Consumer>
+        {
+            new Consumer("Consumer1", dq),
+            new Consumer("Consumer2", dq),
+            new Consumer("Consumer3", dq),
+            new Consumer("Consumer4", dq),
+            new Consumer("Consumer5", dq),
+        };
+        
+        Topic t1 = new Topic("Topic1");
+        Topic t2 = new Topic("Topic2");
+        Topic t3 = new Topic("Topic3");
 
-        Consumer c1 = new Consumer("Consumer1", d_Queue);
-        Consumer c2 = new Consumer("Consumer2", d_Queue);
+        //subscribe consumers to topics
+        dq.addSubscriberList("Topic1", consumers);
+        dq.addSubscriberList("Topic2", new List<Consumer>(){
+            consumers[0],consumers[2],consumers[3]
+            });
+        dq.addSubscriberList("Topic3", new List<Consumer>(){
+            consumers[4]
+            });
 
-        Consumer c3 = new Consumer("Consumer3", d_Queue);
-
-        Consumer c4 = new Consumer("Consumer4", d_Queue);
-
-        Consumer c5 = new Consumer("Consumer5", d_Queue);
-
-        d_Queue.addSubscriberList("Topic1", new List<Consumer>(){c1,c2,c3,c4,c5});
-        d_Queue.addSubscriberList("Topic2", new List<Consumer>(){c1,c3,c4});
-        d_Queue.addSubscriberList("Topic3", new List<Consumer>(){c5});
-
-        startMultiThreading(new List<Producer>(){p1,p2});
+        startMultiThreading(producers);
     }
 
     static void startMultiThreading(List<Producer> producers)
     {
         List<Thread> threads = new List<Thread>();
+        const int runTimeInSeconds = 1;
 
-            foreach (var producer in producers)
+        //Create new thread for each producer to produce items
+        foreach (var producer in producers)
+        {
+            Thread thread = new Thread(() =>
             {
-                Thread thread = new Thread(() =>
+                DateTime endTime = DateTime.Now.AddSeconds(runTimeInSeconds);
+                while (DateTime.Now < endTime)
                 {
-                    DateTime endTime = DateTime.Now.AddSeconds(10);
-                    while (DateTime.Now < endTime)
-                    {
-                        eachThreadJob(producer);
-                        Thread.Sleep(1000); // Sleep for 1 second before producing next item
-                    }
-                });
+                    eachThreadJob(producer);
+                    Thread.Sleep(50); // Sleep for 1 second before producing next item
+                }
+            });
 
-                thread.Start();
-                threads.Add(thread);
-            }
+            thread.Start();
+            threads.Add(thread);
+        }
 
-            // Wait for all threads to finish
-            foreach (var thread in threads)
-            {
-                thread.Join();
-            }
-
+        // Wait for all threads to finish
+        foreach (var thread in threads)
+        {
+            thread.Join();
+        }
     }
 
     static void eachThreadJob(Producer p)
-    {        
+    {
+        string topic = getRandomTopicForProducer(p);
+        p.Produce(topic, getMessage());
+    }
+
+    static string getRandomTopicForProducer(Producer p)
+    {
         List<string> topics = getEligibleTopicList(p.Name);
         Random random = new Random();
-
         // Generate a random index
-        int randomIndex = random.Next(0, topics.Count); // Generates a random index between 0 and (l.Count - 1)
-
+        int randomIndex = random.Next(0, topics.Count); 
         // Get the item at the random index
-        string randomItemName = topics[randomIndex];
-        p.Produce(randomItemName,getMessage());
+        return topics[randomIndex];
     }
 
     static List<string> getEligibleTopicList(string producerName)
@@ -79,6 +94,6 @@ class Program
 
     static string getMessage()
     {
-        return "This is message"+(++count);
+        return "This is message "+(++count);
     }
 }
